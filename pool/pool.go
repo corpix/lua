@@ -50,7 +50,7 @@ func (p *Pool) Close() {
 
 func New(newVM func() *lua.LState) *Pool {
 	if newVM == nil {
-		newVm = func() *lua.LState { return lua.NewState() }
+		newVM = func() *lua.LState { return lua.NewState() }
 	}
 
 	return &Pool{
