@@ -1,0 +1,22 @@
+hash: e9f83361c15db4ea473dae19f05f1bf5033beba116b67b2ed281a42a8672757c
+updated: 2017-11-30T23:09:20.776096206Z
+imports:
+- name: github.com/yuin/gopher-lua
+  version: 609c9cd2697344dec90fe0543c6493e3b8da3435
+  subpackages:
+  - ast
+  - parse
+  - pm
+testImports:
+- name: github.com/davecgh/go-spew
+  version: 04cdfd42973bb9c8589fd6a731800cf222fde1a9
+  subpackages:
+  - spew
+- name: github.com/pmezard/go-difflib
+  version: d8ed2627bdf02c080bf22230dbb337003b7aba2d
+  subpackages:
+  - difflib
+- name: github.com/stretchr/testify
+  version: 2aa2c176b9dab406a6970f6a55f513e8a8c8b18f
+  subpackages:
+  - assert
