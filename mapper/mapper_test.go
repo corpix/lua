@@ -61,6 +61,17 @@ func TestToValue(t *testing.T) {
 			},
 			{
 				name:  "array",
+				input: [2]string{"one", "two"},
+				output: func() *lua.LTable {
+					t := &lua.LTable{}
+					t.RawSetInt(1, lua.LString("one"))
+					t.RawSetInt(2, lua.LString("two"))
+					return t
+				}(),
+				err: nil,
+			},
+			{
+				name:  "slice",
 				input: []string{"one", "two"},
 				output: func() *lua.LTable {
 					t := &lua.LTable{}
