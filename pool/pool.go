@@ -43,6 +43,9 @@ func (p *Pool) New() *lua.LState {
 }
 
 func (p *Pool) Close() {
+	p.lock.Lock()
+	defer p.lock.Unlock()
+
 	for _, vm := range p.vms {
 		vm.Close()
 	}
