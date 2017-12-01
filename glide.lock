@@ -1,6 +1,10 @@
-hash: e9f83361c15db4ea473dae19f05f1bf5033beba116b67b2ed281a42a8672757c
-updated: 2017-11-30T23:09:20.776096206Z
+hash: f8829a00a01462f38b1dc76e7ae8d1d2109d113149557f8da45ced556057a96e
+updated: 2017-12-01T01:02:40.000735893Z
 imports:
+- name: github.com/davecgh/go-spew
+  version: 04cdfd42973bb9c8589fd6a731800cf222fde1a9
+  subpackages:
+  - spew
 - name: github.com/yuin/gopher-lua
   version: 609c9cd2697344dec90fe0543c6493e3b8da3435
   subpackages:
@@ -8,10 +12,6 @@ imports:
   - parse
   - pm
 testImports:
-- name: github.com/davecgh/go-spew
-  version: 04cdfd42973bb9c8589fd6a731800cf222fde1a9
-  subpackages:
-  - spew
 - name: github.com/pmezard/go-difflib
   version: d8ed2627bdf02c080bf22230dbb337003b7aba2d
   subpackages:
