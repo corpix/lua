@@ -7,6 +7,115 @@ import (
 	lua "github.com/yuin/gopher-lua"
 )
 
+func TestToValue(t *testing.T) {
+	type testCase struct {
+		name   string
+		input  interface{}
+		output lua.LValue
+		err    error
+	}
+
+	var (
+		samples = []testCase{
+			{
+				name:   "nil",
+				input:  nil,
+				output: lua.LNil,
+				err:    nil,
+			},
+			{
+				name:   "bool",
+				input:  false,
+				output: lua.LBool(false),
+				err:    nil,
+			},
+			{
+				name:   "string",
+				input:  "",
+				output: lua.LString(""),
+				err:    nil,
+			},
+			{
+				name:   "float64",
+				input:  float64(0),
+				output: lua.LNumber(0),
+				err:    nil,
+			},
+			{
+				name:   "int64",
+				input:  int64(0),
+				output: lua.LNumber(0),
+				err:    nil,
+			},
+			{
+				name:   "uint64",
+				input:  uint64(0),
+				output: lua.LNumber(0),
+				err:    nil,
+			},
+			{
+				name:   "table",
+				input:  map[interface{}]interface{}{},
+				output: &lua.LTable{},
+				err:    nil,
+			},
+			{
+				name:  "array",
+				input: []string{"one", "two"},
+				output: func() *lua.LTable {
+					t := &lua.LTable{}
+					t.RawSetInt(1, lua.LString("one"))
+					t.RawSetInt(2, lua.LString("two"))
+					return t
+				}(),
+				err: nil,
+			},
+			{
+				name: "map",
+				input: map[interface{}]interface{}{
+					"foo":      "bar",
+					float64(1): "baz",
+				},
+				output: func() *lua.LTable {
+					t := &lua.LTable{}
+					t.RawSetString("foo", lua.LString("bar"))
+					t.RawSetH(lua.LNumber(1), lua.LString("baz"))
+					return t
+				}(),
+				err: nil,
+			},
+			func() testCase {
+				var (
+					f = func() {}
+				)
+
+				return testCase{
+					name:   "unknown type error",
+					input:  f,
+					output: nil,
+					err:    NewErrUnknownType(f),
+				}
+			}(),
+		}
+	)
+
+	for _, sample := range samples {
+		t.Run(
+			sample.name,
+			func(t *testing.T) {
+				var (
+					v   lua.LValue
+					err error
+				)
+
+				v, err = ToValue(sample.input)
+				assert.IsType(t, sample.err, err)
+				assert.EqualValues(t, sample.output, v)
+			},
+		)
+	}
+}
+
 func TestFromValue(t *testing.T) {
 	type testCase struct {
 		name   string
@@ -97,7 +206,7 @@ func TestFromValue(t *testing.T) {
 				)
 
 				v, err = FromValue(sample.input)
-				assert.EqualValues(t, sample.err, err)
+				assert.IsType(t, sample.err, err)
 				assert.EqualValues(t, sample.output, v)
 			},
 		)

@@ -1,6 +1,8 @@
 package mapper
 
 import (
+	"reflect"
+
 	lua "github.com/yuin/gopher-lua"
 )
 
@@ -16,6 +18,91 @@ func table(v *lua.LTable) map[lua.LValue]lua.LValue {
 	)
 
 	return res
+}
+
+func ToValue(gv interface{}) (lua.LValue, error) {
+	var (
+		err error
+	)
+
+	switch v := gv.(type) {
+	case nil:
+		return lua.LNil, nil
+	case bool:
+		return lua.LBool(v), nil
+	case string:
+		return lua.LString(v), nil
+	case uint:
+		return lua.LNumber(v), nil
+	case uint8:
+		return lua.LNumber(v), nil
+	case uint16:
+		return lua.LNumber(v), nil
+	case uint32:
+		return lua.LNumber(v), nil
+	case uint64:
+		return lua.LNumber(v), nil
+	case int:
+		return lua.LNumber(v), nil
+	case int8:
+		return lua.LNumber(v), nil
+	case int16:
+		return lua.LNumber(v), nil
+	case int32:
+		return lua.LNumber(v), nil
+	case int64:
+		return lua.LNumber(v), nil
+	case float32:
+		return lua.LNumber(v), nil
+	case float64:
+		return lua.LNumber(v), nil
+	}
+
+	var (
+		v     = reflect.ValueOf(gv)
+		t     = &lua.LTable{}
+		value lua.LValue
+	)
+
+	switch reflect.TypeOf(gv).Kind() {
+	case reflect.Slice, reflect.Array:
+		var (
+			key = 0
+		)
+
+		for key < v.Len() {
+			value, err = ToValue(v.Index(key).Interface())
+			if err != nil {
+				return nil, err
+			}
+
+			key++
+
+			t.RawSetInt(key, value)
+		}
+	case reflect.Map:
+		var (
+			key lua.LValue
+		)
+
+		for _, k := range v.MapKeys() {
+			key, err = ToValue(k.Interface())
+			if err != nil {
+				return nil, err
+			}
+
+			value, err = ToValue(v.MapIndex(k).Interface())
+			if err != nil {
+				return nil, err
+			}
+
+			t.RawSetH(key, value)
+		}
+	default:
+		return nil, NewErrUnknownType(gv)
+	}
+
+	return t, nil
 }
 
 func FromValue(lv lua.LValue) (interface{}, error) {
@@ -80,6 +167,6 @@ func FromValue(lv lua.LValue) (interface{}, error) {
 			return res, nil
 		}
 	default:
-		return nil, NewErrUnknownType(v)
+		return nil, NewErrUnknownType(lv)
 	}
 }
