@@ -41,8 +41,8 @@ func main() {
 		outputValue lua.LValue
 		err         error
 	)
-	defer p.Put(l)
 	defer p.Close()
+	defer p.Put(l)
 
 	inputValue, err = mapper.ToValue(input)
 	if err != nil {
