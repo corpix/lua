@@ -1,8 +1,7 @@
 package mapper
 
 import (
-	"reflect"
-
+	"github.com/corpix/reflect"
 	lua "github.com/yuin/gopher-lua"
 )
 
@@ -58,6 +57,13 @@ func ToValue(gv interface{}) (lua.LValue, error) {
 		return lua.LNumber(v), nil
 	}
 
+	// XXX: If you are looking for a way to map reflect.Func into lua.LFunction
+	// there is no such mapping here, in this file,
+	// because we could convert go func to lua function
+	// but not vice versa.
+	// (information about arguments got destroyed in the process of creation)
+	// So we have separate function to convert go func into lua function.
+
 	var (
 		v     = reflect.ValueOf(gv)
 		t     = &lua.LTable{}
@@ -99,7 +105,7 @@ func ToValue(gv interface{}) (lua.LValue, error) {
 			t.RawSetH(key, value)
 		}
 	default:
-		return nil, NewErrUnknownType(gv)
+		return nil, reflect.NewErrUnknownType(gv)
 	}
 
 	return t, nil
@@ -167,6 +173,6 @@ func FromValue(lv lua.LValue) (interface{}, error) {
 			return res, nil
 		}
 	default:
-		return nil, NewErrUnknownType(lv)
+		return nil, reflect.NewErrUnknownType(lv)
 	}
 }
