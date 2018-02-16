@@ -3,6 +3,7 @@ package mapper
 import (
 	"testing"
 
+	"github.com/corpix/reflect"
 	"github.com/stretchr/testify/assert"
 	lua "github.com/yuin/gopher-lua"
 )
@@ -104,7 +105,7 @@ func TestToValue(t *testing.T) {
 					name:   "unknown type error",
 					input:  f,
 					output: nil,
-					err:    NewErrUnknownType(f),
+					err:    reflect.NewErrUnknownType(f),
 				}
 			}(),
 		}
@@ -201,7 +202,7 @@ func TestFromValue(t *testing.T) {
 					name:   "unknown type error",
 					input:  f,
 					output: nil,
-					err:    NewErrUnknownType(f),
+					err:    reflect.NewErrUnknownType(f),
 				}
 			}(),
 		}
