@@ -176,3 +176,29 @@ func FromValue(lv lua.LValue) (interface{}, error) {
 		return nil, reflect.NewErrUnknownType(lv)
 	}
 }
+
+func MustToValue(v interface{}) lua.LValue {
+	var (
+		res lua.LValue
+		err error
+	)
+
+	res, err = ToValue(v)
+	if err != nil {
+		panic(err)
+	}
+	return res
+}
+
+func MustFromValue(v lua.LValue) interface{} {
+	var (
+		res interface{}
+		err error
+	)
+
+	res, err = FromValue(v)
+	if err != nil {
+		panic(err)
+	}
+	return res
+}

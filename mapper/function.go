@@ -102,3 +102,16 @@ func ToGFunction(gfn interface{}) (lua.LGFunction, error) {
 		},
 	), nil
 }
+
+func MustToGFunction(fn interface{}) lua.LGFunction {
+	var (
+		res lua.LGFunction
+		err error
+	)
+
+	res, err = ToGFunction(fn)
+	if err != nil {
+		panic(err)
+	}
+	return res
+}
