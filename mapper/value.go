@@ -60,6 +60,12 @@ func ToValue(gv interface{}) (lua.LValue, error) {
 
 	case time.Duration:
 		return lua.LNumber(v), nil
+	case error:
+		return &lua.LUserData{
+			Value:     v,
+			Env:       nil,
+			Metatable: &lua.LTable{},
+		}, nil
 	}
 
 	// XXX: If you are looking for a way to map reflect.Func into lua.LFunction
@@ -130,6 +136,8 @@ func FromValue(lv lua.LValue) (interface{}, error) {
 		return string(v), nil
 	case lua.LNumber:
 		return float64(v), nil
+	case *lua.LUserData:
+		return v.Value, nil
 	case *lua.LTable:
 		var (
 			n = v.MaxN()

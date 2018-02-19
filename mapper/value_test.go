@@ -1,6 +1,7 @@
 package mapper
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/corpix/reflect"
@@ -37,8 +38,8 @@ func TestToValue(t *testing.T) {
 				err:    nil,
 			},
 			{
-				name:   "float64",
-				input:  float64(0),
+				name:   "uint64",
+				input:  uint64(0),
 				output: lua.LNumber(0),
 				err:    nil,
 			},
@@ -49,10 +50,20 @@ func TestToValue(t *testing.T) {
 				err:    nil,
 			},
 			{
-				name:   "uint64",
-				input:  uint64(0),
+				name:   "float64",
+				input:  float64(0),
 				output: lua.LNumber(0),
 				err:    nil,
+			},
+			{
+				name:  "error",
+				input: errors.New("hello, this is a bad way to create error"),
+				output: &lua.LUserData{
+					Value:     errors.New("hello, this is a bad way to create error"),
+					Env:       nil,
+					Metatable: &lua.LTable{},
+				},
+				err: nil,
 			},
 			{
 				name:   "table",
@@ -122,7 +133,7 @@ func TestToValue(t *testing.T) {
 
 				v, err = ToValue(sample.input)
 				assert.IsType(t, sample.err, err)
-				assert.EqualValues(t, sample.output, v)
+				assert.Equal(t, sample.output, v)
 			},
 		)
 	}
@@ -160,6 +171,16 @@ func TestFromValue(t *testing.T) {
 				name:   "number",
 				input:  lua.LNumber(0),
 				output: float64(0),
+				err:    nil,
+			},
+			{
+				name: "error",
+				input: &lua.LUserData{
+					Value:     errors.New("hello, this is a bad way to create error"),
+					Env:       nil,
+					Metatable: &lua.LTable{},
+				},
+				output: errors.New("hello, this is a bad way to create error"),
 				err:    nil,
 			},
 			{
@@ -219,7 +240,7 @@ func TestFromValue(t *testing.T) {
 
 				v, err = FromValue(sample.input)
 				assert.IsType(t, sample.err, err)
-				assert.EqualValues(t, sample.output, v)
+				assert.Equal(t, sample.output, v)
 			},
 		)
 	}
