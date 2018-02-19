@@ -1,6 +1,8 @@
 package mapper
 
 import (
+	"time"
+
 	"github.com/corpix/reflect"
 	lua "github.com/yuin/gopher-lua"
 )
@@ -54,6 +56,9 @@ func ToValue(gv interface{}) (lua.LValue, error) {
 	case float32:
 		return lua.LNumber(v), nil
 	case float64:
+		return lua.LNumber(v), nil
+
+	case time.Duration:
 		return lua.LNumber(v), nil
 	}
 
@@ -156,17 +161,17 @@ func FromValue(lv lua.LValue) (interface{}, error) {
 		default:
 			var (
 				res   = make([]interface{}, n)
-				k     = 1
+				k     = 0
 				value interface{}
 			)
 
-			for k <= n {
-				value, err = FromValue(v.RawGetInt(k))
+			for k < n {
+				value, err = FromValue(v.RawGetInt(k + 1))
 				if err != nil {
 					return nil, err
 				}
 
-				res[k-1] = value
+				res[k] = value
 
 				k++
 			}
