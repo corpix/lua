@@ -7,9 +7,10 @@ import (
 
 func ToGFunction(gfn interface{}) (lua.LGFunction, error) {
 	var (
-		v     = reflect.IndirectValue(reflect.ValueOf(gfn))
-		t     = v.Type()
-		numIn = t.NumIn()
+		v        = reflect.IndirectValue(reflect.ValueOf(gfn))
+		t        = v.Type()
+		numIn    = t.NumIn()
+		variadic = t.IsVariadic()
 	)
 
 	if k := t.Kind(); k != reflect.Func {
@@ -22,69 +23,61 @@ func ToGFunction(gfn interface{}) (lua.LGFunction, error) {
 	return lua.LGFunction(
 		func(l *lua.LState) int {
 			var (
-				n    = l.GetTop()
-				tt   reflect.Type
-				arg  interface{}
-				args = make(
-					[]reflect.Value,
-					n,
-					n,
-				)
-				rt  lua.LValue
-				rts []reflect.Value
-				err error
+				n          = l.GetTop()
+				fixedNumIn = numIn
+				buf        interface{}
+				args       []reflect.Value
+				tt         reflect.Type
+				rt         lua.LValue
+				rts        []reflect.Value
+				err        error
 			)
 
-			if numIn != n {
-				if !t.IsVariadic() {
+			if variadic {
+				fixedNumIn--
+
+				if n < fixedNumIn {
 					l.ArgError(
 						n,
-						reflect.NewErrTooFewArguments(numIn, n).Error(),
+						reflect.NewErrWrongArgumentsQuantity(fixedNumIn, n).Error(),
+					)
+				}
+			} else {
+				if n != fixedNumIn {
+					l.ArgError(
+						n,
+						reflect.NewErrWrongArgumentsQuantity(fixedNumIn, n).Error(),
 					)
 					return 0
 				}
-
-				numIn--
 			}
 
-			for k := 0; k < numIn; k++ {
-				tt = t.In(k)
-				arg, err = FromValue(l.Get(k + 1))
+			args = make([]reflect.Value, n)
+
+			for k := n; k > 0; k-- {
+				buf, err = FromValue(l.Get(k))
 				if err != nil {
-					l.ArgError(k+1, err.Error())
+					l.ArgError(k, err.Error())
 					return 0
 				}
-				arg, err = reflect.ConvertToType(
-					arg,
+
+				switch {
+				case k <= fixedNumIn:
+					tt = t.In(k - 1)
+				case variadic && k == n:
+					tt = t.In(fixedNumIn).Elem()
+				}
+
+				buf, err = reflect.ConvertToType(
+					buf,
 					tt,
 				)
 				if err != nil {
-					l.ArgError(k+1, err.Error())
+					l.ArgError(k, err.Error())
 					return 0
 				}
 
-				args[k] = reflect.ValueOf(arg)
-			}
-
-			if t.IsVariadic() {
-				tt = t.In(numIn).Elem()
-				for k := numIn; k < n; k++ {
-					arg, err = FromValue(l.Get(k + 1))
-					if err != nil {
-						l.ArgError(k+1, err.Error())
-						return 0
-					}
-					arg, err = reflect.ConvertToType(
-						arg,
-						tt,
-					)
-					if err != nil {
-						l.ArgError(k+1, err.Error())
-						return 0
-					}
-
-					args[k] = reflect.ValueOf(arg)
-				}
+				args[k-1] = reflect.ValueOf(buf)
 			}
 
 			rts = v.Call(args)

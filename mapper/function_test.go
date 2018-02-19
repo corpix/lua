@@ -114,13 +114,17 @@ func TestToGFunction(t *testing.T) {
 
 				l.PreloadModule("module", loader)
 
-				err = l.DoString(sample.code)
-				if err != nil {
-					t.Error(err)
-					return
-				}
+				for n := 0; n < 10; n++ {
+					state.called = false
 
-				assert.Equal(t, true, state.called)
+					err = l.DoString(sample.code)
+					if err != nil {
+						t.Error(err)
+						return
+					}
+
+					assert.Equal(t, true, state.called)
+				}
 			},
 		)
 	}
